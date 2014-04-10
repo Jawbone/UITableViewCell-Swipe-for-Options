@@ -97,23 +97,29 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(enclosingTableViewDidScroll) name:TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotification  object:nil];
 }
 
+- (BOOL)delegateSupportsOptionalMethods {
+	return [_delegate respondsToSelector:@selector(cellDidSelectDelete:)] && [_delegate respondsToSelector:@selector(cellDidSelectMore:)];
+}
+
+- (void)setDelegate:(id<TLSwipeForOptionsCellDelegate>)delegate {
+	_delegate = delegate;
+	self.scrollView.scrollEnabled = self.delegateSupportsOptionalMethods;
+}
+
 -(void)enclosingTableViewDidScroll {
     [self.scrollView setContentOffset:CGPointZero animated:YES];
 }
 
-- (BOOL)optionsVisible
-{
+#pragma mark - Options
+
+- (BOOL)optionsVisible {
 	return self.scrollView.contentOffset.x == kCatchWidth;
 }
 
-- (void)setOptionsVisible:(BOOL)optionsVisible
-{
-	if (optionsVisible)
-	{
+- (void)setOptionsVisible:(BOOL)optionsVisible {
+	if (optionsVisible) {
 		[self.scrollView setContentOffset:CGPointMake(kCatchWidth, 0) animated:YES];
-	}
-	else
-	{
+	} else {
 		[self.scrollView setContentOffset:CGPointZero animated:YES];
 	}
 }
@@ -149,7 +155,7 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 -(void)setEditing:(BOOL)editing animated:(BOOL)animated {
     [super setEditing:editing animated:animated];
     
-    self.scrollView.scrollEnabled = !self.editing;
+    self.scrollView.scrollEnabled = !self.editing && self.delegateSupportsOptionalMethods;
     
     // Corrects effect of showing the button labels while selected on editing mode (comment line, build, run, add new items to table, enter edit mode and select an entry)
     self.scrollViewButtonView.hidden = editing;
@@ -192,14 +198,12 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 // Pass through scroll view allows for touches to make it to the enclosing tableview cell
 @implementation TLTouchPassthroughScrollView
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesBegan:touches withEvent:event];
     [self.nextResponder touchesBegan:touches withEvent:event];
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesEnded:touches withEvent:event];
     [self.nextResponder touchesEnded:touches withEvent:event];
 }
