@@ -23,4 +23,9 @@ extern NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingN
 
 @property (nonatomic, weak) id<TLSwipeForOptionsCellDelegate> delegate;
 
+@property (nonatomic, strong, readonly) UIButton *deleteButton;
+@property (nonatomic, strong, readonly) UIButton *moreButton;
+
+@property (nonatomic, assign) BOOL optionsVisible;
+
 @end

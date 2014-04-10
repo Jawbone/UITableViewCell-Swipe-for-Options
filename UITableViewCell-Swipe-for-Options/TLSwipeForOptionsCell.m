@@ -10,7 +10,7 @@
 
 NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotification = @"TLSwipeForOptionsCellEnclosingTableViewDidScrollNotification";
 
-#define kCatchWidth 180
+#define kCatchWidth 120
 
 @interface TLSwipeForOptionsCell () <UIScrollViewDelegate>
 
@@ -21,6 +21,12 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 
 @property (nonatomic, weak) UILabel *scrollViewLabel;
 
+@property (nonatomic, strong, readwrite) UIButton *deleteButton;
+@property (nonatomic, strong, readwrite) UIButton *moreButton;
+
+@end
+
+@interface TLTouchPassthroughScrollView : UIScrollView
 @end
 
 @implementation TLSwipeForOptionsCell
@@ -42,40 +48,47 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 
 -(void)setup {
     // Set up our contentView hierarchy
-    
-    UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds))];
+    UIScrollView *scrollView = [[TLTouchPassthroughScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds))];
     scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.bounds) + kCatchWidth, CGRectGetHeight(self.bounds));
     scrollView.delegate = self;
     scrollView.showsHorizontalScrollIndicator = NO;
     
-    [self.contentView addSubview:scrollView];
+	NSMutableArray *viewsInContentView = [self.contentView.subviews copy];
+	
+    [self.contentView insertSubview:scrollView atIndex:0];
     self.scrollView = scrollView;
-    
+	self.scrollView.delaysContentTouches = NO;
     UIView *scrollViewButtonView = [[UIView alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.bounds) - kCatchWidth, 0, kCatchWidth, CGRectGetHeight(self.bounds))];
     self.scrollViewButtonView = scrollViewButtonView;
     [self.scrollView addSubview:scrollViewButtonView];
-    
+
     // Set up our two buttons
-    UIButton *moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    moreButton.backgroundColor = [UIColor colorWithRed:0.78f green:0.78f blue:0.8f alpha:1.0f];
-    moreButton.frame = CGRectMake(0, 0, kCatchWidth / 2.0f, CGRectGetHeight(self.bounds));
-    [moreButton setTitle:@"More" forState:UIControlStateNormal];
-    [moreButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [moreButton addTarget:self action:@selector(userPressedMoreButton:) forControlEvents:UIControlEventTouchUpInside];
-    [self.scrollViewButtonView addSubview:moreButton];
+    self.moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.moreButton.backgroundColor = [UIColor colorWithRed:0.78f green:0.78f blue:0.8f alpha:1.0f];
+    self.moreButton.frame = CGRectMake(0, 0, kCatchWidth / 2.0f, CGRectGetHeight(self.bounds));
+    [self.moreButton setTitle:@"More" forState:UIControlStateNormal];
+    [self.moreButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [self.moreButton addTarget:self action:@selector(userPressedMoreButton:) forControlEvents:UIControlEventTouchUpInside];
+    [self.scrollViewButtonView addSubview:self.moreButton];
     
-    UIButton *deleteButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    deleteButton.backgroundColor = [UIColor colorWithRed:1.0f green:0.231f blue:0.188f alpha:1.0f];
-    deleteButton.frame = CGRectMake(kCatchWidth / 2.0f, 0, kCatchWidth / 2.0f, CGRectGetHeight(self.bounds));
-    [deleteButton setTitle:@"Delete" forState:UIControlStateNormal];
-    [deleteButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [deleteButton addTarget:self action:@selector(userPressedDeleteButton:) forControlEvents:UIControlEventTouchUpInside];
-    [self.scrollViewButtonView addSubview:deleteButton];
+    self.deleteButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.deleteButton.backgroundColor = [UIColor colorWithRed:1.0f green:0.231f blue:0.188f alpha:1.0f];
+    self.deleteButton.frame = CGRectMake(kCatchWidth / 2.0f, 0, kCatchWidth / 2.0f, CGRectGetHeight(self.bounds));
+    [self.deleteButton setTitle:@"Delete" forState:UIControlStateNormal];
+    [self.deleteButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [self.deleteButton addTarget:self action:@selector(userPressedDeleteButton:) forControlEvents:UIControlEventTouchUpInside];
+    [self.scrollViewButtonView addSubview:self.deleteButton];
     
     UIView *scrollViewContentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds))];
-    scrollViewContentView.backgroundColor = [UIColor whiteColor];
+    scrollViewContentView.backgroundColor = self.contentView.backgroundColor;
     [self.scrollView addSubview:scrollViewContentView];
     self.scrollViewContentView = scrollViewContentView;
+	
+	for (UIView *view in viewsInContentView)
+	{
+		[view removeFromSuperview];
+		[self.scrollViewContentView addSubview:view];
+	}
     
     UILabel *scrollViewLabel = [[UILabel alloc] initWithFrame:CGRectInset(self.scrollViewContentView.bounds, 10, 0)];
     self.scrollViewLabel = scrollViewLabel;
@@ -86,6 +99,23 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 
 -(void)enclosingTableViewDidScroll {
     [self.scrollView setContentOffset:CGPointZero animated:YES];
+}
+
+- (BOOL)optionsVisible
+{
+	return self.scrollView.contentOffset.x == kCatchWidth;
+}
+
+- (void)setOptionsVisible:(BOOL)optionsVisible
+{
+	if (optionsVisible)
+	{
+		[self.scrollView setContentOffset:CGPointMake(kCatchWidth, 0) animated:YES];
+	}
+	else
+	{
+		[self.scrollView setContentOffset:CGPointZero animated:YES];
+	}
 }
 
 #pragma mark - Private Methods 
@@ -123,8 +153,6 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
     
     // Corrects effect of showing the button labels while selected on editing mode (comment line, build, run, add new items to table, enter edit mode and select an entry)
     self.scrollViewButtonView.hidden = editing;
-    
-    NSLog(@"%d", editing);
 }
 
 -(UILabel *)textLabel {
@@ -160,3 +188,20 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 @end
 
 #undef kCatchWidth
+
+// Pass through scroll view allows for touches to make it to the enclosing tableview cell
+@implementation TLTouchPassthroughScrollView
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesBegan:touches withEvent:event];
+    [self.nextResponder touchesBegan:touches withEvent:event];
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesEnded:touches withEvent:event];
+    [self.nextResponder touchesEnded:touches withEvent:event];
+}
+
+@end
