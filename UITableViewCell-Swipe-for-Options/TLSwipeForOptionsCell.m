@@ -91,6 +91,7 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 	}
     
     UILabel *scrollViewLabel = [[UILabel alloc] initWithFrame:CGRectInset(self.scrollViewContentView.bounds, 10, 0)];
+    scrollViewLabel.backgroundColor = [UIColor clearColor];
     self.scrollViewLabel = scrollViewLabel;
     [self.scrollViewContentView addSubview:scrollViewLabel];
     
