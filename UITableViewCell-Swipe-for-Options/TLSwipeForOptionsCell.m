@@ -111,6 +111,24 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
     [self.scrollView setContentOffset:CGPointZero animated:YES];
 }
 
+- (void)setShouldHideDeleteButton:(BOOL)shouldHideDeleteButton
+{
+    _shouldHideDeleteButton = shouldHideDeleteButton;
+    
+    if (_shouldHideDeleteButton)
+    {
+        self.deleteButton.hidden = YES;
+        self.moreButton.frame = CGRectMake(kCatchWidth / 2.0f, 0, kCatchWidth / 2.0f, CGRectGetHeight(self.bounds));
+    }
+    else
+    {
+        self.deleteButton.hidden = NO;
+        self.moreButton.frame = CGRectMake(0, 0, kCatchWidth / 2.0f, CGRectGetHeight(self.bounds));
+    }
+    
+    self.scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.bounds) + self.catchWidth, CGRectGetHeight(self.bounds));
+}
+
 #pragma mark - Options
 
 - (BOOL)optionsVisible {
@@ -160,10 +178,20 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 
 #pragma mark - UIScrollViewDelegate Methods
 
+- (CGFloat)catchWidth
+{
+    if (self.shouldHideDeleteButton)
+    {
+        return kCatchWidth / 2.0;
+    }
+    
+    return kCatchWidth;
+}
+
 - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset {
     
-    if (scrollView.contentOffset.x > kCatchWidth) {
-        targetContentOffset->x = kCatchWidth;
+    if (scrollView.contentOffset.x > self.catchWidth) {
+        targetContentOffset->x = self.catchWidth;
     }
     else {
         *targetContentOffset = CGPointZero;

@@ -13,8 +13,8 @@
 @protocol TLSwipeForOptionsCellDelegate <NSObject>
 
 @optional
--(void)cellDidSelectDelete:(TLSwipeForOptionsCell *)cell;
--(void)cellDidSelectMore:(TLSwipeForOptionsCell *)cell;
+- (void)cellDidSelectDelete:(TLSwipeForOptionsCell *)cell;
+- (void)cellDidSelectMore:(TLSwipeForOptionsCell *)cell;
 
 @end
 
@@ -28,5 +28,6 @@ extern NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingN
 @property (nonatomic, strong, readonly) UIButton *moreButton;
 
 @property (nonatomic, assign) BOOL optionsVisible;
+@property (nonatomic, assign) BOOL shouldHideDeleteButton;
 
 @end
