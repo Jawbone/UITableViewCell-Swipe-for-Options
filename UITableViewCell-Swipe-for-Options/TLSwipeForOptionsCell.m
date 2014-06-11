@@ -52,6 +52,7 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
     scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.bounds) + kCatchWidth, CGRectGetHeight(self.bounds));
     scrollView.delegate = self;
     scrollView.showsHorizontalScrollIndicator = NO;
+    scrollView.scrollsToTop = NO;
     
 	NSMutableArray *viewsInContentView = [self.contentView.subviews copy];
 	
