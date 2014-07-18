@@ -10,7 +10,9 @@
 
 NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotification = @"TLSwipeForOptionsCellEnclosingTableViewDidScrollNotification";
 
-#define kCatchWidth 120
+static const CGFloat kOptionsMaxWidth       = 120.0f;
+static const CGFloat kCatchWidthFactor      = 0.4f;
+static const NSInteger kNumOptionButtons    = 2;
 
 @interface TLSwipeForOptionsCell () <UIScrollViewDelegate>
 
@@ -23,6 +25,9 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 
 @property (nonatomic, strong, readwrite) UIButton *deleteButton;
 @property (nonatomic, strong, readwrite) UIButton *moreButton;
+
+@property (nonatomic, assign) CGFloat optionsWidth;
+@property (nonatomic, assign) CGFloat previousXOffset;
 
 @end
 
@@ -46,10 +51,11 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
     return self;
 }
 
--(void)setup {
+-(void)setup
+{
     // Set up our contentView hierarchy
     UIScrollView *scrollView = [[TLTouchPassthroughScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds))];
-    scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.bounds) + kCatchWidth, CGRectGetHeight(self.bounds));
+    scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.bounds) + self.optionsWidth, CGRectGetHeight(self.bounds));
     scrollView.delegate = self;
     scrollView.showsHorizontalScrollIndicator = NO;
     scrollView.scrollsToTop = NO;
@@ -59,14 +65,14 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
     [self.contentView insertSubview:scrollView atIndex:0];
     self.scrollView = scrollView;
 	self.scrollView.delaysContentTouches = NO;
-    UIView *scrollViewButtonView = [[UIView alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.bounds) - kCatchWidth, 0, kCatchWidth, CGRectGetHeight(self.bounds))];
+    UIView *scrollViewButtonView = [[UIView alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.bounds) - self.optionsWidth, 0, self.optionsWidth, CGRectGetHeight(self.bounds))];
     self.scrollViewButtonView = scrollViewButtonView;
     [self.scrollView addSubview:scrollViewButtonView];
 
     // Set up our two buttons
     self.moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
     self.moreButton.backgroundColor = [UIColor colorWithRed:0.78f green:0.78f blue:0.8f alpha:1.0f];
-    self.moreButton.frame = CGRectMake(0, 0, kCatchWidth / 2.0f, CGRectGetHeight(self.bounds));
+    self.moreButton.frame = CGRectMake(0, 0, self.optionsWidth / (float)kNumOptionButtons, CGRectGetHeight(self.bounds));
     [self.moreButton setTitle:@"More" forState:UIControlStateNormal];
     [self.moreButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.moreButton addTarget:self action:@selector(userPressedMoreButton:) forControlEvents:UIControlEventTouchUpInside];
@@ -74,7 +80,7 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
     
     self.deleteButton = [UIButton buttonWithType:UIButtonTypeCustom];
     self.deleteButton.backgroundColor = [UIColor colorWithRed:1.0f green:0.231f blue:0.188f alpha:1.0f];
-    self.deleteButton.frame = CGRectMake(kCatchWidth / 2.0f, 0, kCatchWidth / 2.0f, CGRectGetHeight(self.bounds));
+    self.deleteButton.frame = CGRectMake(self.optionsWidth / (float)kNumOptionButtons, 0, self.optionsWidth / (float)kNumOptionButtons, CGRectGetHeight(self.bounds));
     [self.deleteButton setTitle:@"Delete" forState:UIControlStateNormal];
     [self.deleteButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.deleteButton addTarget:self action:@selector(userPressedDeleteButton:) forControlEvents:UIControlEventTouchUpInside];
@@ -100,7 +106,7 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 }
 
 - (BOOL)delegateSupportsOptionalMethods {
-	return [_delegate respondsToSelector:@selector(cellDidSelectDelete:)] && [_delegate respondsToSelector:@selector(cellDidSelectMore:)];
+	return [_delegate respondsToSelector:@selector(cellDidSelectDelete:)] || [_delegate respondsToSelector:@selector(cellDidSelectMore:)];
 }
 
 - (void)setDelegate:(id<TLSwipeForOptionsCellDelegate>)delegate {
@@ -116,29 +122,20 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
 {
     _shouldHideDeleteButton = shouldHideDeleteButton;
     
-    if (_shouldHideDeleteButton)
-    {
-        self.deleteButton.hidden = YES;
-        self.moreButton.frame = CGRectMake(kCatchWidth / 2.0f, 0, kCatchWidth / 2.0f, CGRectGetHeight(self.bounds));
-    }
-    else
-    {
-        self.deleteButton.hidden = NO;
-        self.moreButton.frame = CGRectMake(0, 0, kCatchWidth / 2.0f, CGRectGetHeight(self.bounds));
-    }
-    
-    self.scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.bounds) + self.catchWidth, CGRectGetHeight(self.bounds));
+    self.deleteButton.hidden = _shouldHideDeleteButton;
+    self.moreButton.frame = CGRectMake(0, 0, _shouldHideDeleteButton ? self.optionsWidth : floorf(self.optionsWidth / (float)kNumOptionButtons), CGRectGetHeight(self.bounds));
+    self.scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.bounds) + self.optionsWidth, CGRectGetHeight(self.bounds));
 }
 
 #pragma mark - Options
 
 - (BOOL)optionsVisible {
-	return self.scrollView.contentOffset.x == kCatchWidth;
+	return self.scrollView.contentOffset.x == self.optionsWidth;
 }
 
 - (void)setOptionsVisible:(BOOL)optionsVisible {
 	if (optionsVisible) {
-		[self.scrollView setContentOffset:CGPointMake(kCatchWidth, 0) animated:YES];
+		[self.scrollView setContentOffset:CGPointMake(self.optionsWidth, 0) animated:YES];
 	} else {
 		[self.scrollView setContentOffset:CGPointZero animated:YES];
 	}
@@ -177,24 +174,27 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
     return self.scrollViewLabel;
 }
 
-#pragma mark - UIScrollViewDelegate Methods
+- (CGFloat)optionsWidth
+{
+    _optionsWidth = (self.shouldHideDeleteButton) ? kOptionsMaxWidth / (float)kNumOptionButtons : kOptionsMaxWidth;
+    return _optionsWidth;
+}
 
 - (CGFloat)catchWidth
 {
-    if (self.shouldHideDeleteButton)
-    {
-        return kCatchWidth / 2.0;
-    }
-    
-    return kCatchWidth;
+    return self.optionsWidth * kCatchWidthFactor;
 }
 
-- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset {
-    
-    if (scrollView.contentOffset.x > self.catchWidth) {
-        targetContentOffset->x = self.catchWidth;
+#pragma mark - UIScrollViewDelegate Methods
+
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
+{
+    if (scrollView.contentOffset.x > [self catchWidth] && scrollView.contentOffset.x > self.previousXOffset)
+    {
+        targetContentOffset->x = self.optionsWidth;
     }
-    else {
+    else
+    {
         *targetContentOffset = CGPointZero;
         
         // Need to call this subsequently to remove flickering. Strange. 
@@ -202,19 +202,21 @@ NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotifica
             [scrollView setContentOffset:CGPointZero animated:YES];
         });
     }
+    
+    self.previousXOffset = targetContentOffset->x;
 }
 
--(void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if (scrollView.contentOffset.x < 0) {
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    if (scrollView.contentOffset.x < 0)
+    {
         scrollView.contentOffset = CGPointZero;
     }
     
-    self.scrollViewButtonView.frame = CGRectMake(scrollView.contentOffset.x + (CGRectGetWidth(self.bounds) - kCatchWidth), 0.0f, kCatchWidth, CGRectGetHeight(self.bounds));
+    self.scrollViewButtonView.frame = CGRectMake(scrollView.contentOffset.x + (CGRectGetWidth(self.bounds) - self.optionsWidth), 0.0f, self.optionsWidth, CGRectGetHeight(self.bounds));
 }
 
 @end
-
-#undef kCatchWidth
 
 // Pass through scroll view allows for touches to make it to the enclosing tableview cell
 @implementation TLTouchPassthroughScrollView
