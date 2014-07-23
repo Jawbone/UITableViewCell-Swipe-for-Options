@@ -59,6 +59,7 @@ static const NSInteger kNumOptionButtons    = 2;
     scrollView.delegate = self;
     scrollView.showsHorizontalScrollIndicator = NO;
     scrollView.scrollsToTop = NO;
+    scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     
 	NSMutableArray *viewsInContentView = [self.contentView.subviews copy];
 	
@@ -66,6 +67,7 @@ static const NSInteger kNumOptionButtons    = 2;
     self.scrollView = scrollView;
 	self.scrollView.delaysContentTouches = NO;
     UIView *scrollViewButtonView = [[UIView alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.bounds) - self.optionsWidth, 0, self.optionsWidth, CGRectGetHeight(self.bounds))];
+    scrollViewButtonView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     self.scrollViewButtonView = scrollViewButtonView;
     [self.scrollView addSubview:scrollViewButtonView];
 
@@ -76,6 +78,7 @@ static const NSInteger kNumOptionButtons    = 2;
     [self.moreButton setTitle:@"More" forState:UIControlStateNormal];
     [self.moreButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.moreButton addTarget:self action:@selector(userPressedMoreButton:) forControlEvents:UIControlEventTouchUpInside];
+    self.moreButton.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     [self.scrollViewButtonView addSubview:self.moreButton];
     
     self.deleteButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -84,10 +87,12 @@ static const NSInteger kNumOptionButtons    = 2;
     [self.deleteButton setTitle:@"Delete" forState:UIControlStateNormal];
     [self.deleteButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.deleteButton addTarget:self action:@selector(userPressedDeleteButton:) forControlEvents:UIControlEventTouchUpInside];
+    self.deleteButton.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     [self.scrollViewButtonView addSubview:self.deleteButton];
     
     UIView *scrollViewContentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds))];
     scrollViewContentView.backgroundColor = self.contentView.backgroundColor;
+    scrollViewContentView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     [self.scrollView addSubview:scrollViewContentView];
     self.scrollViewContentView = scrollViewContentView;
 	
@@ -103,6 +108,13 @@ static const NSInteger kNumOptionButtons    = 2;
     [self.scrollViewContentView addSubview:scrollViewLabel];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(enclosingTableViewDidScroll) name:TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingNotification  object:nil];
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+    
+    self.scrollView.contentSize = CGSizeMake(self.scrollView.contentSize.width, CGRectGetHeight(self.bounds));
 }
 
 - (BOOL)delegateSupportsOptionalMethods {
