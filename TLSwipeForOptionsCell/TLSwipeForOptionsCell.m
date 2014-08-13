@@ -40,6 +40,11 @@ NSString *const TLSwipeForOptionsCellShouldHideMenuNotification = @"TLSwipeForOp
 	return self;
 }
 
+- (void)dealloc
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void)setup {
 	// Set up our contentView hierarchy
 	
