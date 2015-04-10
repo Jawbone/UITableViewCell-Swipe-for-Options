@@ -59,7 +59,7 @@ static const NSInteger kNumOptionButtons    = 2;
     scrollView.delegate = self;
     scrollView.showsHorizontalScrollIndicator = NO;
     scrollView.scrollsToTop = NO;
-    scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+    scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     
 	NSMutableArray *viewsInContentView = [self.contentView.subviews copy];
 	
@@ -74,7 +74,9 @@ static const NSInteger kNumOptionButtons    = 2;
     // Set up our two buttons
     self.moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
     self.moreButton.backgroundColor = [UIColor colorWithRed:0.78f green:0.78f blue:0.8f alpha:1.0f];
-    self.moreButton.frame = CGRectMake(0, 0, self.optionsWidth / (float)kNumOptionButtons, CGRectGetHeight(self.bounds));
+
+	CGFloat optionsWidth = self.optionsWidth / (float)kNumOptionButtons;
+    self.moreButton.frame = CGRectMake(0, 0, optionsWidth, CGRectGetHeight(self.bounds));
     [self.moreButton setTitle:@"More" forState:UIControlStateNormal];
     [self.moreButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.moreButton addTarget:self action:@selector(userPressedMoreButton:) forControlEvents:UIControlEventTouchUpInside];
@@ -83,7 +85,7 @@ static const NSInteger kNumOptionButtons    = 2;
     
     self.deleteButton = [UIButton buttonWithType:UIButtonTypeCustom];
     self.deleteButton.backgroundColor = [UIColor colorWithRed:1.0f green:0.231f blue:0.188f alpha:1.0f];
-    self.deleteButton.frame = CGRectMake(self.optionsWidth / (float)kNumOptionButtons, 0, self.optionsWidth / (float)kNumOptionButtons, CGRectGetHeight(self.bounds));
+    self.deleteButton.frame = CGRectMake(optionsWidth, 0, optionsWidth, CGRectGetHeight(self.bounds));
     [self.deleteButton setTitle:@"Delete" forState:UIControlStateNormal];
     [self.deleteButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.deleteButton addTarget:self action:@selector(userPressedDeleteButton:) forControlEvents:UIControlEventTouchUpInside];
@@ -92,7 +94,7 @@ static const NSInteger kNumOptionButtons    = 2;
     
     UIView *scrollViewContentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds))];
     scrollViewContentView.backgroundColor = self.contentView.backgroundColor;
-    scrollViewContentView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+    scrollViewContentView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [self.scrollView addSubview:scrollViewContentView];
     self.scrollViewContentView = scrollViewContentView;
 	
