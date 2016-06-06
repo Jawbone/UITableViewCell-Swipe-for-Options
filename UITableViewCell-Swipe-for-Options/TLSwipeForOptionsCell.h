@@ -27,6 +27,7 @@ extern NSString *const TLSwipeForOptionsCellEnclosingTableViewDidBeginScrollingN
 @property (nonatomic, strong, readonly) UIButton *deleteButton;
 @property (nonatomic, strong, readonly) UIButton *moreButton;
 
+@property (nonatomic, assign) BOOL scrollEnabled;
 @property (nonatomic, assign) BOOL optionsVisible;
 @property (nonatomic, assign) BOOL shouldHideDeleteButton;
 
