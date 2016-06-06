@@ -125,7 +125,7 @@ static const NSInteger kNumOptionButtons    = 2;
 
 - (void)setDelegate:(id<TLSwipeForOptionsCellDelegate>)delegate {
 	_delegate = delegate;
-	self.scrollView.scrollEnabled = self.delegateSupportsOptionalMethods;
+	self.scrollView.scrollEnabled = self.delegateSupportsOptionalMethods && self.scrollEnabled;
 }
 
 -(void)enclosingTableViewDidScroll {
@@ -177,10 +177,16 @@ static const NSInteger kNumOptionButtons    = 2;
 -(void)setEditing:(BOOL)editing animated:(BOOL)animated {
     [super setEditing:editing animated:animated];
     
-    self.scrollView.scrollEnabled = !self.editing && self.delegateSupportsOptionalMethods;
+    self.scrollView.scrollEnabled = !self.editing && self.delegateSupportsOptionalMethods && self.scrollEnabled;
     
     // Corrects effect of showing the button labels while selected on editing mode (comment line, build, run, add new items to table, enter edit mode and select an entry)
     self.scrollViewButtonView.hidden = editing;
+}
+
+- (void)setScrollEnabled:(BOOL)scrollEnabled {
+	_scrollEnabled = scrollEnabled;
+	
+	self.scrollView.scrollEnabled = scrollEnabled;
 }
 
 -(UILabel *)textLabel {
